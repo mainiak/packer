@@ -1,0 +1,49 @@
+{
+  "builders": [{
+    "type": "virtualbox-iso",
+    "guest_os_type": "Ubuntu_64",
+    "headless": true,
+
+    "iso_url": "http://archive.ubuntu.com/ubuntu/dists/xenial/main/installer-amd64/current/images/netboot/mini.iso",
+    "iso_checksum": "902731a64bf54a057ba266a32de5fbcc4c494fcf",
+    "iso_checksum_type": "sha1",
+
+    "ssh_username": "vagrant",
+    "ssh_password": "vagrant",
+    "ssh_wait_timeout": "20m",
+
+    "boot_wait": "10s",
+    "boot_command" : [
+      "<wait><tab><wait><bs><bs><bs><bs><bs><bs>",
+      " auto=true",
+      " locale=en_US",
+      " priority=critical",
+      " url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg",
+      "<enter><wait>"
+    ],
+
+    "http_directory": "http_directory",
+    "http_port_min" : 9001,
+    "http_port_max" : 9001,
+
+    "shutdown_command": "sudo shutdown -P now"
+  }],
+  "provisioners": [{
+    "type": "shell",
+    "pause_before": "10s",
+    "inline": [
+      "cd /tmp",
+      "wget -nv https://raw.githubusercontent.com/mitchellh/vagrant/master/keys/vagrant.pub",
+      "mkdir -p /home/vagrant/.ssh",
+      "mv /tmp/vagrant.pub /home/vagrant/.ssh/authorized_keys",
+      "chmod 0700 /home/vagrant/.ssh/",
+      "chmod 0600 /home/vagrant/.ssh/authorized_keys",
+      "chown -R vagrant:vagrant /home/vagrant/.ssh"
+    ]
+  }],
+  "post-processors": [{
+    "output": "builds/{{.Provider}}-ubuntu1604.box",
+    "keep_input_artifact": false,
+    "type": "vagrant"
+  }]
+}
